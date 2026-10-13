@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpath = ["tests"]
+
+[tool.ruff]
+line-length = 100
