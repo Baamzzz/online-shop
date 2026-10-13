@@ -7,6 +7,9 @@ class Settings(BaseSettings):
 
     app_name: str = "Online Shop"
     environment: str = "development"
+    # Local SQLite fallback so the app and CI still start without a .env file.
+    # The real Neon URL comes from .env locally and from Secret Manager in the cloud.
+    database_url: str = "sqlite:///./local.db"
 
     model_config = SettingsConfigDict(env_file=".env")
 
