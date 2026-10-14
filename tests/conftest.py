@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
-import app.models  # noqa: F401  (registers all models)
+import app.models
 from app.db.session import Base, get_db
 from app.main import app
 

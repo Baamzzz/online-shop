@@ -12,7 +12,9 @@ PASSWORD = "CorrectHorse1"
 
 def register(client, email=EMAIL, password=PASSWORD):
     """Helper: register a user through the API."""
-    return client.post(REGISTER_URL, json={"email": email, "full_name": "Alice", "password": password})
+    return client.post(
+        REGISTER_URL, json={"email": email, "full_name": "Alice", "password": password}
+    )
 
 
 def login(client, password=PASSWORD):
