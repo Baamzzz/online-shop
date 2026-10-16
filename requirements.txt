@@ -8,3 +8,6 @@ argon2-cffi
 pyjwt
 email-validator
 slowapi
+authlib
+itsdangerous
+httpx
