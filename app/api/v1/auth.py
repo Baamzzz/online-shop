@@ -7,6 +7,7 @@ from sqlalchemy import select
 
 from app.core.config import settings
 from app.core.deps import COOKIE_NAME, CurrentUser, DbSession
+from app.core.rate_limit import limiter
 from app.core.security import (
     create_access_token,
     decode_access_token,
@@ -32,7 +33,8 @@ def register(data: UserCreate, db: DbSession) -> User:
     return user
 
 @router.post("/login", response_model=UserOut)
-def login(data: UserLogin, response: Response, db: DbSession) -> User:
+@limiter.limit("5/minute")
+def login(request: Request, data: UserLogin, response: Response, db: DbSession) -> User:
     """Check credentials and set the JWT in an HttpOnly cookie."""
     user = db.scalar(select(User).where(User.email == data.email.lower()))
     # One generic error for unknown email AND wrong password,

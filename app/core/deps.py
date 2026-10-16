@@ -37,3 +37,12 @@ def get_current_user(request: Request, db: DbSession) -> User:
     return user
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+def require_admin(user: CurrentUser) -> User:
+    """Allow only admins through. Logged-in customers get 403 Forbidden."""
+    if user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin Access required")
+    return user
+
+
+AdminUser = Annotated[User, Depends(require_admin)]

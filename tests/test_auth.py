@@ -86,3 +86,10 @@ def test_logged_out_token_cannot_be_reused(client):
 
     client.cookies.set("access_token", stolen_token)
     assert client.get("/api/v1/auth/me").status_code == 401
+
+def test_login_is_rate_limited(client):
+    """After 5 attempts in a minute, further logins are blocked with 429."""
+    register(client)
+    for _ in range(5):
+        login(client, password="WrongPassword1")
+    assert login(client, password="WrongPassword1").status_code == 429

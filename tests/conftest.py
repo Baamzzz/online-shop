@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 import app.models
+from app.core.rate_limit import limiter
 from app.db.session import Base, get_db
 from app.main import app
 
@@ -25,6 +26,7 @@ def db_session():
 @pytest.fixture
 def client(db_session):
     """A test client whose requests use the test database instead of Neon."""
+    limiter.reset() # Start every test with a clean rate-limit count
     app.dependency_overrides[get_db] = lambda: db_session
     with TestClient(app) as test_client:
         yield test_client
