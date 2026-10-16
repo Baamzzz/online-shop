@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     jwt_secret_key: str = DEFAULT_SECRET
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+    # Google OAuth (Sign in with Google)
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    # Signs the short-lived session cookie used during the OAuth handshake
+    session_secret_key: str = DEFAULT_SECRET
     # Secure cookies are only sent over HTTPS: off locally, on in production
     cookie_secure: bool = False
 
@@ -25,7 +30,10 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def refuse_default_secret_in_production(self) -> "Settings":
         """Fail fast rather than run in production with a guessable signing key."""
-        if self.environment == "production" and self.jwt_secret_key == DEFAULT_SECRET:
+        if self.environment == "production" and DEFAULT_SECRET in(
+            self.jwt_secret_key,
+            self.session_secret_key,
+        ):
             raise ValueError("JWT_SECRET_KEY must be set in production")
         return self
 
