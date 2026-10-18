@@ -1,10 +1,16 @@
 """Admin-only routes. Every route in this router requires the admin role."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.deps import DbSession, require_admin
-from app.models import Category, Product, User
+from app.models import Category, Order, Product, PromoCode, User
+from app.schemas.order import (
+    OrderOut,
+    OrderStatusUpdate,
+    PromoCodeCreate,
+    PromoCodeOut,
+)
 from app.schemas.product import (
     CategoryCreate,
     CategoryOut,
@@ -83,3 +89,33 @@ def delete_product(product_id: int, db: DbSession) -> None:
     product = _get_product_or_404(db, product_id)
     product.is_active = False
     db.commit()
+
+@router.post("/promo-codes", response_model=PromoCodeOut, status_code=status.HTTP_201_CREATED)
+def create_promo_code(data: PromoCodeCreate, db: DbSession) -> PromoCode:
+    """Create a promo code. Codes are stored in uppercase so matching ignores case."""
+    code = data.code.upper()
+    if db.scalar(select(PromoCode).where(PromoCode.code == code)):
+        raise HTTPException(status.HTTP_409_CONFLICT, "Promo code already exists")
+    promo = PromoCode(**data.model_dump(exclude={"code"}), code=code)
+    db.add(promo)
+    db.commit()
+    db.refresh(promo)
+    return promo
+
+
+@router.get("/orders", response_model=list[OrderOut])
+def list_all_order(db: DbSession) -> list[Order]:
+    """List every order, newest first."""
+    query = select(Order).options(selectinload(Order.items)).order_by(Order.id.desc())
+    return list(db.scalars(query))
+
+@router.patch("/orders/{order_id}/status", response_model=OrderOut)
+def update_order_status(order_id: int, data: OrderStatusUpdate, db: DbSession) -> Order:
+    """Move an order to a new status, e.g. paid or completed."""
+    order = db.get(Order, order_id)
+    if order is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Order not found")
+    order.status = data.status
+    db.commit()
+    db.refresh(order)
+    return order
