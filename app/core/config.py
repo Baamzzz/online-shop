@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     # The real Neon URL comes from .env locally and from Secret Manager in the cloud.
     database_url: str = "sqlite:///./local.db"
 
+    # MongoDB Atlas: carts, reviews and events (local default so tests and CI start without .env)
+    mongo_uri: str = "mongodb://localhost:27017"
+    mongo_db_name: str = "online_shop"
+
     # Auth Settings
     jwt_secret_key: str = DEFAULT_SECRET
     jwt_algorithm: str = "HS256"
