@@ -4,7 +4,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.api.v1 import admin, auth, orders, products
+from app.api.v1 import admin, auth, cart, orders, products
 from app.core.config import settings
 from app.core.rate_limit import limiter
 
@@ -26,6 +26,7 @@ app.include_router(auth.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1")
 app.include_router(products.router, prefix="/api/v1")
 app.include_router(orders.router, prefix="/api/v1")
+app.include_router(cart.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["system"])

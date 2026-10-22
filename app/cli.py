@@ -1,8 +1,9 @@
 """Command-line admin tools. 
 
 Usage:
-     python -m app.cli 
-     make-admin someone@example.com
+     python -m app.cli make-admin someone@example.com
+     python -m app.cli seed
+     python -m app.cli init-mongo
 """
 import argparse
 import sys
@@ -10,6 +11,7 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
+from app.db.mongo import get_mongo
 from app.db.session import SessionLocal
 from app.models import Category, Product, User
 
@@ -43,6 +45,14 @@ def seed() -> None:
         db.commit()
         print("Added sample menu")
 
+
+def init_mongo() -> None:
+    """Create MongoDB indexes. Safe to run more than once."""
+    mongo = get_mongo()
+    # Lets the abandoned-cart job quickly find carts that haven't been updated recently
+    mongo.carts.create_index("updated_at")
+    print("MongoDB indexes created")
+
 def main() -> None:
     """Parse the command line and run the chosen command."""
     parser = argparse.ArgumentParser(description="Online Shop admin tools")
@@ -51,12 +61,15 @@ def main() -> None:
     make_admin_cmd = commands.add_parser("make-admin", help="Give a user the admin role")
     make_admin_cmd.add_argument("email")
     commands.add_parser("seed", help="Add sample categories and products")
+    commands.add_parser("init-mongo", help="Create MongoDB indexes")
 
     args = parser.parse_args()
     if args.command == "make-admin":
         make_admin(args.email)
     elif args.command == "seed":
         seed()
+    elif args.command == "init-mongo":
+        init_mongo()
 
 if __name__ == "__main__":
     main()

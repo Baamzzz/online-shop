@@ -11,3 +11,4 @@ slowapi
 authlib
 itsdangerous
 httpx
+pymongo

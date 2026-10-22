@@ -96,12 +96,32 @@ def test_customers_cannot_see_other_customers_orders(client, latte):
     client.post(LOGIN_URL, json={"email": "eve@example.com", "password": PASSWORD})
     assert client.get(f"{ORDERS_URL}/{order_id}").status_code == 404
 
-
 def test_empty_order_is_rejected(customer):
     """An order must have at least one item."""
     assert customer.post(ORDERS_URL, json={"items": []}).status_code == 422
 
 
 def test_ordering_requires_login(client, latte):
-    """ANonymouse users can't place orders."""
+    """Anonymous users can't place orders."""
     assert place(client, latte.id).status_code == 401
+
+
+def test_multi_item_order_charges_each_line_correctly(customer, latte, db_session):
+    """Each product's own quantity is used for its stock and price."""
+    croissant = Product(name="Croissant", price=Decimal("2.50"), stock=5)
+    db_session.add(croissant)
+    db_session.commit()
+
+    payload = {
+        "items": [
+            {"product_id": latte.id, "quantity": 1},
+            {"product_id": croissant.id, "quantity": 3},
+        ]
+    }
+    response = customer.post(ORDERS_URL, json=payload)
+    assert response.json()["total"] == "10.70"  # 3.20 + (3 x 2.50)
+
+    db_session.refresh(latte)
+    db_session.refresh(croissant)
+    assert latte.stock == 4
+    assert croissant.stock == 2
