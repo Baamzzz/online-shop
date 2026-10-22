@@ -3,9 +3,11 @@ from typing import Annotated
 
 import jwt
 from fastapi import Depends, HTTPException, Request, status
+from pymongo.database import Database
 from sqlalchemy.orm import Session
 
 from app.core.security import decode_access_token
+from app.db.mongo import get_mongo
 from app.db.session import get_db
 from app.models import RevokedToken, User
 
@@ -46,3 +48,5 @@ def require_admin(user: CurrentUser) -> User:
 
 
 AdminUser = Annotated[User, Depends(require_admin)]
+
+MongoDB = Annotated[Database, Depends(get_mongo)]
