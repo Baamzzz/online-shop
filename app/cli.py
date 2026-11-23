@@ -51,6 +51,8 @@ def init_mongo() -> None:
     mongo = get_mongo()
     # Lets the abandoned-cart job quickly find carts that haven't been updated recently
     mongo.carts.create_index("updated_at")
+    # One review per customer per product, enforced by the database as a safety net
+    mongo.reviews.create_index([("product_id", 1), ("use_id", 1)], unique=True)
     print("MongoDB indexes created")
 
 def main() -> None:
