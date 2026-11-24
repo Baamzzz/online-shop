@@ -6,8 +6,7 @@ from sqlalchemy.orm import selectinload
 from app.core.deps import DbSession, MongoDb, OptionalUser
 from app.models import Product
 from app.schemas.product import ProductOut
-from app.services import events
-from app.services import Recommendations
+from app.services import recommendations, events
 
 router = APIRouter(tags=["products"])
 
@@ -59,4 +58,4 @@ def get_recommendations(product_id: int, db: DbSession, mongo: MongoDb) -> list[
     product = db.get(Product, product_id)
     if product is None or not product.is_active:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Product not found")
-    return Recommendations.for_product(db, mongo, product)
+    return recommendations.for_product(db, mongo, product)

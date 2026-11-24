@@ -14,7 +14,7 @@ from sqlalchemy import select
 from app.db.mongo import get_mongo
 from app.db.session import SessionLocal
 from app.models import Category, Product, User
-from app.services.Recommendations import compute_all
+from app.services.recommendations import compute_all
 
 SAMPLE_MENU = {
     "Drinks": [("Latte", "3.20"), ("Cappuccino", "3.10"), ("Hot Chocolate", "3.40")],

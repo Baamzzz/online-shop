@@ -6,8 +6,8 @@ from app.models import Order, Product
 from app.schemas.cart import CartItemIn, CartOut, CheckoutIn
 from app.schemas.order import OrderItemIn, OrderOut
 from app.services import cart as cart_service
-from app.services.orders import OrderError, place_order
 from app.services import events
+from app.services.orders import OrderError, place_order
 
 router = APIRouter(prefix="/cart", tags=["cart"])
 

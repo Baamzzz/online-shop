@@ -1,10 +1,11 @@
 """Admin-only routes. Every route in this router requires the admin role."""
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.deps import DbSession, require_admin, MongoDb
+from app.core.deps import DbSession, MongoDb, require_admin
 from app.models import Category, Order, Product, PromoCode, User
+from app.schemas.analytics import AnalyticsOut, PopularProduct, SearchTerm
 from app.schemas.order import (
     OrderOut,
     OrderStatusUpdate,
@@ -18,9 +19,8 @@ from app.schemas.product import (
     ProductOut,
     ProductUpdate,
 )
-from app.schemas.analytics import AnalyticsOut, PopularProduct, SearchTerm
-from app.services import events
 from app.schemas.user import UserOut
+from app.services import events
 
 # Applying require_admin at router level makes every route here admin-only by default,
 # so a new admin route can't accidentally be left unprotected

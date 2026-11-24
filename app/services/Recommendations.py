@@ -33,8 +33,8 @@ def compute_all(db: Session, mongo: Database, per_product: int = 4) -> int:
     now = datetime.now(UTC)
     for product_id, counts in bought_with.items():
         top = [other for other, _ in counts.most_common(per_product)]
-        mongo.recomendations.replace_one(
-            {"_id": product_id}, {"products_ids": top, "updated_at": now}, upsert=True
+        mongo.recommendations.replace_one(
+            {"_id": product_id}, {"product_ids": top, "updated_at": now}, upsert=True
         )
     return len(bought_with)
 
@@ -44,7 +44,7 @@ def for_product(db: Session, mongo: Database, product: Product, limit: int = 4) 
     doc = mongo.recommendations.find_one({"_id": product.id})
     ids = doc["product_ids"] if doc else []
 
-    reccomended: list [Product] = []
+    recommended: list [Product] = []
     if ids:
         query = select(Product).where(Product.id.in_(ids), Product.is_active.is_(True))
         found = {p.id: p for p in db.scalars(query)}
