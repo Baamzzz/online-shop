@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 from app.core.deps import DbSession, MongoDb, OptionalUser
 from app.models import Product
 from app.schemas.product import ProductOut
-from app.services import recommendations, events
+from app.services import events, recommendations
 
 router = APIRouter(tags=["products"])
 
