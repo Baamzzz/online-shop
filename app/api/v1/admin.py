@@ -1,10 +1,11 @@
 """Admin-only routes. Every route in this router requires the admin role."""
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.deps import DbSession, require_admin
+from app.core.deps import DbSession, MongoDb, require_admin
 from app.models import Category, Order, Product, PromoCode, User
+from app.schemas.analytics import AnalyticsOut, PopularProduct, SearchTerm
 from app.schemas.order import (
     OrderOut,
     OrderStatusUpdate,
@@ -19,6 +20,7 @@ from app.schemas.product import (
     ProductUpdate,
 )
 from app.schemas.user import UserOut
+from app.services import events
 
 # Applying require_admin at router level makes every route here admin-only by default,
 # so a new admin route can't accidentally be left unprotected
@@ -119,3 +121,27 @@ def update_order_status(order_id: int, data: OrderStatusUpdate, db: DbSession) -
     db.commit()
     db.refresh(order)
     return order
+
+@router.get("/analytics", response_model=AnalyticsOut)
+def analytics(
+    db: DbSession, mongo: MongoDb, days: int = Query(default=7, ge=1, le=90)
+) -> AnalyticsOut:
+    """Most viewd products and top searches, to help decide what to promote."""
+    viewed = events.most_viewed(mongo, days)
+    ids = [row["_id"] for row in viewed]
+    names = {p.id: p.name for p in db.scalars(select(Product).where(Product.id.in_(ids)))}
+    return AnalyticsOut(
+        days=days,
+        most_viewed=[
+            PopularProduct(
+                product_id=row["_id"],
+                name=names.get(row["_id"], "Deleted product"),
+                views=row["views"],
+            )
+            for row in viewed
+        ],
+        top_searches=[
+            SearchTerm(query=row["_id"], count=row["count"])
+            for row in events.top_searches(mongo, days)
+        ],
+    )
