@@ -50,3 +50,13 @@ def require_admin(user: CurrentUser) -> User:
 AdminUser = Annotated[User, Depends(require_admin)]
 
 MongoDB = Annotated[Database, Depends(get_mongo)]
+
+def get_optional_user(request: Request, db: DbSession) -> User | None:
+    """Like get_current_user, but returns None for anonymous visitors instead of raising 401."""
+    try:
+        return get_current_user(request, db)
+    except HTTPException:
+        return None
+
+
+OptionalUser = Annotated[User | None, Depends(get_optional_user)]
