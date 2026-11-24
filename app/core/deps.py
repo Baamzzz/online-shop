@@ -49,7 +49,7 @@ def require_admin(user: CurrentUser) -> User:
 
 AdminUser = Annotated[User, Depends(require_admin)]
 
-MongoDB = Annotated[Database, Depends(get_mongo)]
+MongoDb = Annotated[Database, Depends(get_mongo)]
 
 def get_optional_user(request: Request, db: DbSession) -> User | None:
     """Like get_current_user, but returns None for anonymous visitors instead of raising 401."""

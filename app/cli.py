@@ -14,6 +14,7 @@ from sqlalchemy import select
 from app.db.mongo import get_mongo
 from app.db.session import SessionLocal
 from app.models import Category, Product, User
+from app.services.Recommendations import compute_all
 
 SAMPLE_MENU = {
     "Drinks": [("Latte", "3.20"), ("Cappuccino", "3.10"), ("Hot Chocolate", "3.40")],
@@ -53,7 +54,17 @@ def init_mongo() -> None:
     mongo.carts.create_index("updated_at")
     # One review per customer per product, enforced by the database as a safety net
     mongo.reviews.create_index([("product_id", 1), ("use_id", 1)], unique=True)
+    # Delete events automatically after 90 days: data minimisation (keep only what's needed)
+    mongo.events.create_index("created_at", expireAfterSeconds=90 * 24 * 60 * 60)
+    # Speeds up the analytics queries, which filter by type and date
+    mongo.events.create_index([("type", 1), ("created_at", -1)])
     print("MongoDB indexes created")
+
+def update_recommendations() -> None:
+    """Rebuild 'customers also bought' from order history."""
+    with SessionLocal() as db:
+        count = compute_all(db, get_mongo())
+    print(f"Recommendations updated for {count} products")
 
 def main() -> None:
     """Parse the command line and run the chosen command."""
@@ -64,6 +75,7 @@ def main() -> None:
     make_admin_cmd.add_argument("email")
     commands.add_parser("seed", help="Add sample categories and products")
     commands.add_parser("init-mongo", help="Create MongoDB indexes")
+    commands.add_parser("recommendations", help="Rebuild product recommendations")
 
     args = parser.parse_args()
     if args.command == "make-admin":
@@ -72,6 +84,8 @@ def main() -> None:
         seed()
     elif args.command == "init-mongo":
         init_mongo()
+    elif args.command == "recommendations":
+        update_recommendations()
 
 if __name__ == "__main__":
     main()

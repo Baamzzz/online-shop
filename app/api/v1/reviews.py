@@ -1,7 +1,7 @@
 """Product review routes. Anyone can read reviews; only verified buyers can write them."""
 from fastapi import APIRouter, HTTPException, status
 
-from app.core.deps import CurrentUser, DbSession, MongoDB
+from app.core.deps import CurrentUser, DbSession, MongoDb
 from app.models import Product
 from app.schemas.review import ReviewIn, ReviewOut, ReviewSummary
 from app.services import reviews as review_service
@@ -11,7 +11,7 @@ router = APIRouter(tags=["reviews"])
 
 
 @router.get("/products/{product_id}/reviews", response_model=ReviewSummary)
-def list_reviews(product_id: int, mongo: MongoDB) -> ReviewSummary:
+def list_reviews(product_id: int, mongo: MongoDb) -> ReviewSummary:
     """A product's average rating, review count and newest reviews."""
     return review_service.product_reviews(mongo, product_id)
 
@@ -22,7 +22,7 @@ def list_reviews(product_id: int, mongo: MongoDB) -> ReviewSummary:
     status_code=status.HTTP_201_CREATED,
 )
 def create_review(
-    product_id: int, data: ReviewIn, user: CurrentUser, db: DbSession, mongo: MongoDB
+    product_id: int, data: ReviewIn, user: CurrentUser, db: DbSession, mongo: MongoDb
 ) -> ReviewOut:
     """Review a prodcut you have bought."""
     product = db.get(Product, product_id)
@@ -35,7 +35,7 @@ def create_review(
 
 
 @router.post("/reviews/{review_id}/helpful", status_code=status.HTTP_204_NO_CONTENT)
-def vote_helpful(review_id: str, user: CurrentUser, mongo: MongoDB) -> None:
+def vote_helpful(review_id: str, user: CurrentUser, mongo: MongoDb) -> None:
     "Mark someone else's review as helpful."
     try:
         review_service.mark_helpful(mongo, review_id, user.id)
