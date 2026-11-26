@@ -81,9 +81,13 @@ def product_reviews(mongo: Database, product_id: int, limit: int = 20) -> Review
         )
     )
     docs = mongo.reviews.find({"product_id": product_id}).sort("created_at", -1).limit(limit)
+
+    # Only use the stats if at least one review matched (mongomock, and some MongoDB
+    # versions, return a group with a None average when nothing matched)
+    summary = stats[0] if stats and stats[0]["count"] else None
     return ReviewSummary(
-        average_rating=round(stats[0]["average"], 1) if stats else None,
-        review_count=stats[0]["count"] if stats else 0,
+        average_rating=round(summary["average"], 1) if summary else None,
+        review_count=summary["count"] if summary else 0,
         reviews=[_to_out(doc) for doc in docs],
     )
 

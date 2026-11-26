@@ -1,5 +1,8 @@
 """Entry point for the FastAPI application"""
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.sessions import SessionMiddleware
@@ -7,6 +10,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.api.v1 import admin, auth, cart, orders, products, reviews
 from app.core.config import settings
 from app.core.rate_limit import limiter
+from app.web import pages
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
 
@@ -28,6 +32,9 @@ app.include_router(products.router, prefix="/api/v1")
 app.include_router(orders.router, prefix="/api/v1")
 app.include_router(cart.router, prefix="/api/v1")
 app.include_router(reviews.router, prefix="/api/v1")
+# Front end: static files (CSS/JS) and the HTML pages
+app.mount("/static", StaticFiles(directory=Path(__file__).resolve().parent / "static"), name="static")
+app.include_router(pages.router)
 
 
 @app.get("/health", tags=["system"])

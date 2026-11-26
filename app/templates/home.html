@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Shop{% endblock %}
+
+{% block content %}
+<hgroup>
+  <h1>Fresh from the café</h1>
+  <p>Order ahead and pick up in minutes.</p>
+</hgroup>
+
+<form method="get" action="/" role="search">
+  <input type="search" name="q" value="{{ q or '' }}" placeholder="Search the menu" aria-label="Search">
+  <select name="category_id" aria-label="Category">
+    <option value="">All categories</option>
+    {% for category in categories %}
+      <option value="{{ category.id }}" {% if category.id == category_id %}selected{% endif %}>
+        {{ category.name }}
+      </option>
+    {% endfor %}
+  </select>
+  <input type="submit" value="Search">
+</form>
+
+{% if products %}
+<div class="product-grid">
+  {% for product in products %}
+  <article>
+    <header><a href="/products/{{ product.id }}">{{ product.name }}</a></header>
+    {% if product.description %}<p>{{ product.description }}</p>{% endif %}
+    <footer>
+      <strong>£{{ product.price }}</strong>
+      {% if product.stock == 0 %} · <em>Sold out</em>{% endif %}
+    </footer>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p>No products match your search.</p>
+{% endif %}
+{% endblock %}

@@ -12,3 +12,4 @@ authlib
 itsdangerous
 httpx
 pymongo
+jinja2

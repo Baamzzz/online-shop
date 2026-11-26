@@ -111,6 +111,6 @@ async def google_callback(request: Request, db: DbSession) -> RedirectResponse:
 
     user = get_or_create_google_user(db, info)
     # Redirect to the docs for now; this becomes the shop home page in the front-end stage
-    response = RedirectResponse(url="/docs", status_code=status.HTTP_303_SEE_OTHER)
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     _set_auth_cookie(response, user)
     return response

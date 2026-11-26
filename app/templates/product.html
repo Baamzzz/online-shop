@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<article>
+  <hgroup>
+    <h1>{{ product.name }}</h1>
+    <p>{{ product.category.name if product.category else "" }}</p>
+  </hgroup>
+  {% if product.description %}<p>{{ product.description }}</p>{% endif %}
+  <p class="price">£{{ product.price }}</p>
+  {% if reviews.average_rating %}
+    <p>★ {{ reviews.average_rating }} ({{ reviews.review_count }} reviews)</p>
+  {% endif %}
+
+  {% if product.stock == 0 %}
+    <p><em>Sold out</em></p>
+  {% elif user %}
+    <form data-api="/cart/items" data-method="PUT" data-success="Added to your cart">
+      <input type="hidden" name="product_id" value="{{ product.id }}" data-number>
+      <fieldset role="group">
+        <input type="number" name="quantity" value="1" min="1" max="{{ [product.stock, 50] | min }}"
+               aria-label="Quantity" data-number>
+        <input type="submit" value="Add to cart">
+      </fieldset>
+    </form>
+  {% else %}
+    <p><a href="/login">Log in</a> to order.</p>
+  {% endif %}
+</article>
+
+{% if recommendations %}
+<section>
+  <h2>Customers also bought</h2>
+  <div class="product-grid">
+    {% for item in recommendations %}
+    <article>
+      <a href="/products/{{ item.id }}">{{ item.name }}</a><br>
+      £{{ item.price }}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section>
+  <h2>Reviews</h2>
+  {% for review in reviews.reviews %}
+  <article>
+    <strong>{{ "★" * review.rating }}</strong> by {{ review.author_name }}
+    {% if review.comment %}<p>{{ review.comment }}</p>{% endif %}
+    <small>{{ review.helpful_votes }} found this helpful</small>
+  </article>
+  {% else %}
+  <p>No reviews yet.</p>
+  {% endfor %}
+
+  {% if user %}
+  <details>
+    <summary>Write a review</summary>
+    <form data-api="/products/{{ product.id }}/reviews" data-redirect="/products/{{ product.id }}">
+      <label>Rating
+        <select name="rating" required data-number>
+          <option value="5">★★★★★ Excellent</option>
+          <option value="4">★★★★ Good</option>
+          <option value="3">★★★ OK</option>
+          <option value="2">★★ Poor</option>
+          <option value="1">★ Bad</option>
+        </select>
+      </label>
+      <label>Comment (optional)
+        <textarea name="comment" maxlength="1000"></textarea>
+      </label>
+      <input type="submit" value="Post review">
+    </form>
+  </details>
+  {% endif %}
+</section>
+{% endblock %}

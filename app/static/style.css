@@ -1,0 +1,13 @@
+/* Small additions on top of Pico CSS */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.product-grid article { margin: 0; }
+.price { font-size: 1.5rem; font-weight: bold; }
+.narrow { max-width: 28rem; margin-inline: auto; }
+.full-width { width: 100%; margin-bottom: 1rem; }
+.message { padding: 0.75rem 1rem; border-radius: 0.5rem; }
+.message.success { background: #e6f4ea; color: #1e4620; }
+.message.error { background: #fdecea; color: #611a15; }

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Sign up{% endblock %}
+
+{% block content %}
+<article class="narrow">
+  <h1>Create an account</h1>
+  <form data-api="/auth/register" data-redirect="/login?registered=1">
+    <label>Full name
+      <input type="text" name="full_name" required maxlength="100" autocomplete="name">
+    </label>
+    <label>Email
+      <input type="email" name="email" required autocomplete="email">
+    </label>
+    <label>Password
+      <input type="password" name="password" required minlength="8" maxlength="128"
+             autocomplete="new-password">
+      <small>At least 8 characters.</small>
+    </label>
+    <input type="submit" value="Sign up">
+  </form>
+  <p>Already have an account? <a href="/login">Log in</a></p>
+</article>
+{% endblock %}
