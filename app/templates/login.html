@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+<article class="narrow">
+  <h1>Log in</h1>
+  {% if registered %}
+    <p class="message success">Account created. You can log in now.</p>
+  {% endif %}
+  <form data-api="/auth/login" data-redirect="/">
+    <label>Email
+      <input type="email" name="email" required autocomplete="email">
+    </label>
+    <label>Password
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+    <input type="submit" value="Log in">
+  </form>
+  <a href="/api/v1/auth/google/login" role="button" class="secondary outline full-width">
+    Sign in with Google
+  </a>
+  <p>No account yet? <a href="/register">Sign up</a></p>
+</article>
+{% endblock %}

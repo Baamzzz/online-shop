@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Shop{% endblock %} · Bean &amp; Bake</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+  <header class="container">
+    <nav>
+      <ul><li><a href="/"><strong>☕ Bean &amp; Bake</strong></a></li></ul>
+      <ul>
+        <li><a href="/">Shop</a></li>
+        {% if user %}
+          <li><a href="/cart">Cart</a></li>
+          <li><a href="/orders">My orders</a></li>
+          {% if user.role == "admin" %}<li><a href="/admin">Admin</a></li>{% endif %}
+          <li><button id="logout" class="secondary outline">Log out</button></li>
+        {% else %}
+          <li><a href="/login">Log in</a></li>
+          <li><a href="/register" role="button">Sign up</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <p id="message" class="message" hidden></p>
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', path='app.js') }}"></script>
+</body>
+</html>
