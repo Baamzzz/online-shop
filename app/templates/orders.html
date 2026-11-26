@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}My orders{% endblock %}
+
+{% block content %}
+<h1>My orders</h1>
+{% if placed %}
+  <p class="message success">Thank you! Your order has been placed.</p>
+{% endif %}
+
+{% for order in orders %}
+<article>
+  <header>
+    <strong>Order #{{ order.id }}</strong>
+    · {{ order.created_at.strftime("%d %b %Y, %H:%M") }}
+    · {{ order.status.value | capitalize }}
+  </header>
+  <ul>
+    {% for item in order.items %}
+    <li>{{ item.quantity }} × {{ item.product.name }} (£{{ item.unit_price }} each)</li>
+    {% endfor %}
+  </ul>
+  <footer>
+    Subtotal £{{ order.subtotal }}
+    {% if order.discount > 0 %}
+      · Discount −£{{ order.discount }}{% if order.promo_code %} ({{ order.promo_code.code }}){% endif %}
+    {% endif %}
+    · <strong>Total £{{ order.total }}</strong>
+  </footer>
+</article>
+{% else %}
+<p>You haven't ordered anything yet. <a href="/">Start shopping</a></p>
+{% endfor %}
+{% endblock %}
