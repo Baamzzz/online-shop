@@ -58,3 +58,45 @@ def test_nav_changes_when_logged_in(client, customer):
     assert "Log out" in customer.get("/").text
     customer.post("/api/v1/auth/logout")
     assert "Log in" in customer.get("/").text
+
+
+def test_cart_page_requires_login(client):
+    """Visitors who aren't loggen in are sent to the login page."""
+    response = client.get("/cart", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login"
+
+
+def test_cart_page_shows_items_and_subtotal(customer, latte):
+    """The cart page lists items with live prices and a subtotal."""
+    customer.put("/api/v1/cart/items", json={"product_id": latte.id, "quantity": 2})
+    html = customer.get("/cart").text
+    assert "Latte" in html
+    assert "£6.40" in html
+
+
+def test_empty_cart_page(customer):
+    """An empty cart shows a friendly message instead of a table."""
+    assert "Your cart is empty" in customer.get("/cart").text
+
+
+def test_orders_page_shows_order_history(customer, latte):
+    """Placed orders appear on the My orders page with their total."""
+    customer.post("/api/v1/orders", json={"items": [{"product_id": latte.id, "quantity": 1}]})
+    html = customer.get("/orders").text
+    assert "1 × Latte" in html
+    assert "Total £3.20" in html
+
+
+def test_admin_page_is_hidden_from_customers(customer):
+    """Customers get the not-found page, not the dashboard."""
+    response = customer.get("/admin")
+    assert response.status_code == 404
+    assert "Admin dashboard" not in response.text
+
+
+def test_admin_page_shows_low_stock(admin_client, latte):
+    """Admins see the dashboard, icluding products running low (Latte has 5)."""
+    html = admin_client.get("/admin").text
+    assert "Admin dashboard" in html
+    assert "Latte (5 left)" in html

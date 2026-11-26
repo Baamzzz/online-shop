@@ -26,33 +26,25 @@ function showMessage(text, isError = false) {
     const box = document.getElementById("message");
     // textContent (never innerHTML) means server text is shown as text and can't run as code
     box.textContent = text;
-    box.className = IsError ? "message error" : "message success";
-    return "Something went wrong, please try again";
-}
-
-function showMessage(text, isError = false) {
-    const box = document.getElementById("message");
-    // textContent (never innerHTML) means server text is shown as text and can't run as code
-    box.textContent = text;
-    box.className = IsError ? "message error" : "message success";
+    box.className = isError ? "message error" : "message success";
     box.hidden = false;
     box.scrollIntoView({ behavior: "smooth", block: "center"});
 }
 
 //any <form data-api="/path"> is sent top that API endpoint as JSON
 document.querySelectorAll("form[data-api]").forEach((form) => {
-    from.addEventListener("submit", async (event) => {
+    form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const body = Object.fromEntries(new FormData(form));
 
-        // Form values are always text; convert fields markes data-number into numbers
-        form.querySelectorAll("[data-number]").forEach((input) => {
-            body[input.name] = Number(body[input.name]);
-        });
         // Leave out empty optional fiels, such as a review with no comment
         for (const key of Object.keys(body)) {
             if (body[key] === "") delete body[key];
         }
+        // Form values are always text; convert fields markes data-number into numbers
+        form.querySelectorAll("[data-number]").forEach((input) => {
+            if (input.name in body) body[input.name] = Number(body[input.name]);
+        });
 
         try {
             await api(form.dataset.api, {
@@ -64,7 +56,7 @@ document.querySelectorAll("form[data-api]").forEach((form) => {
             } else {
                 showMessage(form.dataset.success || "Done!");
             }
-        } catch {error} {
+        } catch (error) {
             showMessage(error.message, true);
         }
     });

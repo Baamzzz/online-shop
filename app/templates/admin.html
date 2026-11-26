@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+<h1>Admin dashboard</h1>
+
+<div class="grid">
+  <article>
+    <header>Most viewed (last 7 days)</header>
+    {% for row in analytics.most_viewed %}
+      <p>{{ row.name }}: {{ row.views }} views</p>
+    {% else %}
+      <p>No product views yet.</p>
+    {% endfor %}
+  </article>
+  <article>
+    <header>Top searches (last 7 days)</header>
+    {% for row in analytics.top_searches %}
+      <p>"{{ row.query }}": {{ row.count }}</p>
+    {% else %}
+      <p>No searches yet.</p>
+    {% endfor %}
+  </article>
+</div>
+
+<article>
+  <header>Low stock (5 or fewer)</header>
+  {% for product in low_stock %}
+  <form data-api="/admin/products/{{ product.id }}" data-method="PATCH" data-redirect="/admin">
+    <fieldset role="group">
+      <input type="text" value="{{ product.name }} ({{ product.stock }} left)" readonly aria-label="Product">
+      <input type="number" name="stock" value="50" min="0" aria-label="New stock level" data-number>
+      <input type="submit" value="Restock">
+    </fieldset>
+  </form>
+  {% else %}
+  <p>Everything is well stocked.</p>
+  {% endfor %}
+</article>
+
+<article>
+  <header>Recent orders</header>
+  {% if recent_orders %}
+  <div class="overflow-auto">
+    <table>
+      <thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for order in recent_orders %}
+        <tr>
+          <td>#{{ order.id }}</td>
+          <td>{{ order.created_at.strftime("%d %b, %H:%M") }}</td>
+          <td>{{ order.items | length }}</td>
+          <td>£{{ order.total }}</td>
+          <td>{{ order.status.value | capitalize }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>No orders yet.</p>
+  {% endif %}
+</article>
+
+<article>
+  <header>Add a product</header>
+  <form data-api="/admin/products" data-redirect="/admin">
+    <label>Name <input type="text" name="name" required maxlength="100"></label>
+    <label>Description (optional) <textarea name="description" maxlength="500"></textarea></label>
+    <div class="grid">
+      <label>Price (£)
+        <input type="text" name="price" required inputmode="decimal" pattern="\d+(\.\d{1,2})?" placeholder="3.50">
+      </label>
+      <label>Stock <input type="number" name="stock" value="20" min="0" data-number></label>
+      <label>Category
+        <select name="category_id" data-number>
+          <option value="">None</option>
+          {% for category in categories %}
+          <option value="{{ category.id }}">{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <input type="submit" value="Add product">
+  </form>
+</article>
+{% endblock %}
